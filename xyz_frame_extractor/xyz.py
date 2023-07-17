@@ -1,12 +1,18 @@
 """
 #----------------------------------------------------------------------------------------------------#
-#   ArcaNN: Very fancy DeepMD-based semi-automatic highly-customizable iterative training procedure. #
-#   Copyright 2022-2023 ArcaNN developers group <https://github.com/arcann-chem>                     #
+#   ArcaNN: xyz_frame_extractor                                                                      #
+#   Copyright 2023 ArcaNN developers group <https://github.com/arcann-chem>                          #
 #                                                                                                    #
 #   SPDX-License-Identifier: AGPL-3.0-only                                                           #
 #----------------------------------------------------------------------------------------------------#
 Created: 2023/07/17
 Last modified: 2023/07/17
+
+This script provides utility functions for reading and writing XYZ format trajectory files.
+
+It includes the following functions:
+- read_xyz_trajectory: Read an XYZ format trajectory file and extract the number of atoms, atomic symbols, and atomic coordinates.
+- write_xyz_frame: Write the XYZ coordinates of a specific frame of a trajectory to a file.
 """
 # Standard library modules
 import re

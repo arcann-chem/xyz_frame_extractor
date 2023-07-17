@@ -19,7 +19,7 @@ The ArcaNN XYZ Trajectory Processor is a command-line tool that processes trajec
 1. Clone the ArcaNN XYZ Trajectory Processor repository:
 
    ```bash
-   git clone https://github.com/arcann-chem/xyz-trajectory-processor.git
+   git clone https://github.com/arcann-chem/xyz_frame_extractor.git
    ```
 
 2. Navigate to the project directory:
