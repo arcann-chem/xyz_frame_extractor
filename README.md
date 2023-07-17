@@ -1,6 +1,6 @@
-# ArcaNN XYZ Trajectory Processor
+# ArcaNN XYZ Frame Extractor
 
-The ArcaNN XYZ Trajectory Processor is a command-line tool that processes trajectory files in the XYZ format. It allows you to extract frames from a trajectory file based on specified options and write them to a new trajectory file.
+The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory files in the XYZ format. It allows you to extract frames from a trajectory file based on specified options and write them to a new trajectory file.
 
 ## Features
 
@@ -16,7 +16,7 @@ The ArcaNN XYZ Trajectory Processor is a command-line tool that processes trajec
 
 ## Installation
 
-1. Clone the ArcaNN XYZ Trajectory Processor repository:
+1. Clone the ArcaNN XYZ Frame Extractor repository:
 
    ```bash
    git clone https://github.com/arcann-chem/xyz_frame_extractor.git
@@ -37,7 +37,7 @@ The ArcaNN XYZ Trajectory Processor is a command-line tool that processes trajec
 ## Usage
 
 ```bash
-python xyz_trajectory_processor.py input.xyz output.xyz --stride 2 --skip 10
+python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10
 ```
 
 - `input.xyz` is the path to the input XYZ trajectory file.
