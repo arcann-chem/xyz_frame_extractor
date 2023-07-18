@@ -35,6 +35,7 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
    ```
 
 ## Usage
+Go to the directory where the trajectory is located or specify the absolute path of the trajectory, then 
 
 ```bash
 python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10
