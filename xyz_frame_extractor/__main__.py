@@ -76,12 +76,13 @@ def main(input_file, output_file, frame_stride, skip_frames):
         logging.error(error_msg)
         return 1
 
-    for frame_idx in range(skip_frames, num_atoms.size, frame_stride):
+    for frame_idx0,frame_idx in enumerate(range(skip_frames, num_atoms.size, frame_stride)):
         if frame_idx >= num_atoms.size:
             continue
         write_xyz_frame(output_xyz, frame_idx, num_atoms, atom_coords, atom_symbols)
 
     logging.info("Processing complete without errors.")
+    logging.info(f"{frame_idx0+1} frames saved.")
 
 
 if __name__ == "__main__":
