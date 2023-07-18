@@ -20,9 +20,9 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
 
     Option a. Clone the ArcaNN XYZ Frame Extractor repository:
 
-   ```bash
-   git clone https://github.com/arcann-chem/xyz_frame_extractor.git
-   ```
+    ```bash
+    git clone https://github.com/arcann-chem/xyz_frame_extractor.git
+    ```
 
     Option b. Download the archive by clicking on the green Code button and then download zip
 
@@ -32,15 +32,15 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
 
 2. Navigate to the project directory:
 
-   ```bash
-   cd xyz_frame_extractor
-   ```
+    ```bash
+    cd xyz_frame_extractor
+    ```
 
 3. Install the dependencies and the module (please do not forget the dot at the end):
 
-   ```bash
-   pip install -r requirements.txt .
-   ```
+    ```bash
+    pip install -r requirements.txt .
+    ```
 
 ## Usage
 
@@ -61,15 +61,15 @@ python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10
 
 1. Extract frames from `input.xyz` with a stride of 2, skipping the first 10 frames:
 
-   ```bash
-   python xyz_trajectory_processor.py input.xyz output.xyz --stride 2 --skip 10
-   ```
+    ```bash
+    python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10
+    ```
 
 2. Extract frames from `input.xyz` with a stride of 50 without skipping any frames:
 
-   ```bash
-   python xyz_trajectory_processor.py $HOME/inputs/input.xyz  $HOME/outputs/output.xyz --stride 50
-   ```
+    ```bash
+    python -m xyz_frame_extractor $HOME/inputs/input.xyz  $HOME/outputs/output.xyz --stride 50
+    ```
 
 ## License
 
