@@ -6,7 +6,7 @@
 #   SPDX-License-Identifier: AGPL-3.0-only                                                           #
 #----------------------------------------------------------------------------------------------------#
 Created: 2023/07/17
-Last modified: 2023/07/17
+Last modified: 2023/07/18
 
 This script extracts individual frames from a trajectory file in XYZ format and saves them to a new trajectory file.
 """
@@ -45,21 +45,36 @@ def main(input_file, output_file, frame_stride, skip_frames):
     if not input_xyz.is_file():
         error_msg = f"{input_xyz} file not found"
         logging.error(error_msg)
-        return
+        return 1
+
+    if output_xyz.is_file():
+        logging.critical(f"{output_xyz} file found")
+        while True:
+            user_input = input("Should we delete it first (Y) or abort (N)? ")
+            if user_input.upper() == "Y":
+                output_xyz.unlink()
+                logging.info(f"{output_xyz} deleted.")
+                break
+            elif user_input.upper() == "N":
+                logging.info("Operation aborted.")
+                logging.info("Exiting...")
+                return 1
+            else:
+                logging.warning("Invalid input. Please enter 'Y' or 'N'.")
 
     if frame_stride <= 0 or skip_frames < 0:
         error_msg = (
             "Stride should be a positive integer and skip count should be non-negative."
         )
         logging.error(error_msg)
-        return
+        return 1
 
     num_atoms, atom_symbols, atom_coords = read_xyz_trajectory(input_xyz)
 
     if frame_stride > num_atoms.size:
         error_msg = "Stride value cannot be greater than the total number of frames in the trajectory."
         logging.error(error_msg)
-        return
+        return 1
 
     for frame_idx in range(skip_frames, num_atoms.size, frame_stride):
         if frame_idx >= num_atoms.size:
