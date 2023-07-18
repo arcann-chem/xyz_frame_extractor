@@ -28,10 +28,10 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
    cd xyz-trajectory-processor
    ```
 
-3. Install the dependencies:
+3. Install the dependencies (please do not forget the dot at the end) :
 
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements.txt .
    ```
 
 ## Usage
