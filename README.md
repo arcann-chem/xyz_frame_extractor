@@ -16,26 +16,35 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
 
 ## Installation
 
-1. Clone the ArcaNN XYZ Frame Extractor repository:
+1. Download the ArcaNN XYZ Frame Extractor
+
+    Option a. Clone the ArcaNN XYZ Frame Extractor repository:
 
    ```bash
    git clone https://github.com/arcann-chem/xyz_frame_extractor.git
    ```
 
+    Option b. Download the archive by clicking on the green Code button and then download zip
+
+    ```bash
+    unzip xyz_frame_extractor-main.zip -d xyz_frame_extractor
+    ```
+
 2. Navigate to the project directory:
 
    ```bash
-   cd xyz-trajectory-processor
+   cd xyz_frame_extractor
    ```
 
-3. Install the dependencies (please do not forget the dot at the end) :
+3. Install the dependencies and the module (please do not forget the dot at the end):
 
    ```bash
    pip install -r requirements.txt .
    ```
 
 ## Usage
-Go to the directory where the trajectory is located or specify the absolute path of the trajectory, then 
+
+Go to the directory where the trajectory is located or specify the absolute path of the trajectory, then
 
 ```bash
 python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10
