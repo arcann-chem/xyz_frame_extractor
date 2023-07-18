@@ -44,14 +44,14 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
 
 ## Usage
 
-Go to the directory where the trajectory is located or specify the absolute path of the trajectory, then
+Go to the directory where the trajectory is located or otherwise specify the absolute path of the file of the trajectory, then
 
 ```bash
 python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10
 ```
 
-- `input.xyz` is the path to the input XYZ trajectory file.
-- `output.xyz` is the path to the output XYZ trajectory file.
+- `input.xyz` is the name of the input XYZ trajectory file (if not in the directory specify the absolute path)
+- `output.xyz` is the name of the output XYZ trajectory file (if needed specify the absolute path where you want to locate your file)
 - `--stride` (optional) specifies the frame extraction interval (default: 1).
 - `--skip` (optional) specifies the number of frames to skip from the beginning of the trajectory (default: 0).
 
@@ -65,10 +65,10 @@ python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10
    python xyz_trajectory_processor.py input.xyz output.xyz --stride 2 --skip 10
    ```
 
-2. Extract frames from `input.xyz` without skipping any frames:
+2. Extract frames from `input.xyz` with a stride of 50 without skipping any frames:
 
    ```bash
-   python xyz_trajectory_processor.py input.xyz output.xyz
+   python xyz_trajectory_processor.py $HOME/inputs/input.xyz  $HOME/outputs/output.xyz --stride 50
    ```
 
 ## License
