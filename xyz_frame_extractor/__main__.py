@@ -6,7 +6,7 @@
 #   SPDX-License-Identifier: AGPL-3.0-only                                                           #
 #----------------------------------------------------------------------------------------------------#
 Created: 2023/07/17
-Last modified: 2023/08/08
+Last modified: 2023/08/09
 
 This script extracts individual frames from a trajectory file in XYZ format and saves them to a new trajectory file.
 """
@@ -15,9 +15,12 @@ import argparse
 import logging
 from pathlib import Path
 
+# Third-party modules
 import numpy as np
 
+# Local modules
 from xyz_frame_extractor.xyz import read_xyz_trajectory, write_xyz_frame
+
 
 parser = argparse.ArgumentParser(
     description="Process a xyz trajectory file with options."
