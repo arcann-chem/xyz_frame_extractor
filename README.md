@@ -13,7 +13,7 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
 
 ## Requirements
 
-- Python 3.x
+- Python >= 3.6
 - Additional Python dependencies can be installed using the `requirements.txt` file
 
 ## Installation
