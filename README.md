@@ -7,6 +7,8 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
 - Extract frames from an XYZ trajectory file
 - Specify the frame extraction interval using the `--stride` option
 - Skip a certain number of frames from the beginning using the `--skip` option
+- Choose the comment line using the `--comment` option: `frame`, `cp2k`, or `cell`
+- Provide a CP2K cell file using the `--cell_file` option
 - Process large trajectory files efficiently
 
 ## Requirements
@@ -47,15 +49,19 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
 Go to the directory where the trajectory is located or otherwise specify the absolute path of the file of the trajectory, then
 
 ```bash
-python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10
+python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10 --comment frame --cell_file input.cell
 ```
 
 - `input.xyz` is the name of the input XYZ trajectory file (if not in the directory specify the absolute path)
 - `output.xyz` is the name of the output XYZ trajectory file (if needed specify the absolute path where you want to locate your file)
 - `--stride` (optional) specifies the frame extraction interval (default: 1).
 - `--skip` (optional) specifies the number of frames to skip from the beginning of the trajectory (default: 0).
+- `--comment` (optional) sepecifies the comment line (default: frame): frame, cp2k or cell.
+  - `frame`: the comment in is the format Frame: $i
+  - `cp2k`: the comment line is in the CP2K format: the input.xyz has to be in the cp2k format too.
+  - `cell`: used with `--cell_file` (the name of a CP2K cell file) provide the comment as format `ABX xx xy xz yx yy yz zx zy zz`.
 
-**Note:** The input and output file paths are required parameters, while `--stride` and `--skip` are optional.
+**Note:** The input and output file paths are required parameters, while `--stride`, `--skip`, `--comment` and `--cell_file` are optional.
 
 ## Examples
 
