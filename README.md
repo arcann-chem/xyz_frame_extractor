@@ -53,10 +53,10 @@ python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10 --commen
 ```
 
 - `input.xyz` is the name of the input XYZ trajectory file (if not in the directory specify the absolute path)
-- `output.xyz` is the name of the output XYZ trajectory file (if needed specify the absolute path where you want to locate your file)
+- `output.xyz` is the name of the output XYZ trajectory file (if needed, specify the absolute path where you want to locate your file)
 - `--stride` (optional) specifies the frame extraction interval (default: 1).
 - `--skip` (optional) specifies the number of frames to skip from the beginning of the trajectory (default: 0).
-- `--comment` (optional) sepecifies the comment line (default: frame): frame, cp2k or cell.
+- `--comment` (optional) specifies the comment line (default: frame): frame, cp2k or cell.
   - `frame`: the comment in is the format Frame: $i
   - `cp2k`: the comment line is in the CP2K format: the input.xyz has to be in the cp2k format too.
   - `cell`: used with `--cell_file` (the name of a CP2K cell file) provide the comment as format `ABX xx xy xz yx yy yz zx zy zz`.

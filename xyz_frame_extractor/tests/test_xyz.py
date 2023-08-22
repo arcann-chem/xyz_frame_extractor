@@ -137,7 +137,9 @@ class TestReadXYZTrajectory(unittest.TestCase):
         )
 
     def test_read_xyz_trajectory(self):
-        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(self.file_path)
+        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
+            self.file_path
+        )
 
         self.assertIsInstance(num_atoms, np.ndarray)
         self.assertIsInstance(atom_symbols, np.ndarray)
@@ -277,7 +279,9 @@ class TestReadWriteXYZTrajectory(unittest.TestCase):
         self.tmp_dir.cleanup()
 
     def test_read_write_xyz_trajectory(self):
-        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(self.file_path)
+        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
+            self.file_path
+        )
 
         self.assertIsInstance(num_atoms, np.ndarray)
         self.assertIsInstance(atom_symbols, np.ndarray)
@@ -306,7 +310,9 @@ class TestReadWriteXYZTrajectory(unittest.TestCase):
 
         self.file_new_path = Path(self.tmp_dir.name) / "new.xyz"
         write_xyz_frame(self.file_new_path, 0, num_atoms, atom_coords, atom_symbols)
-        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(self.file_new_path)
+        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
+            self.file_new_path
+        )
 
         self.assertIsInstance(num_atoms, np.ndarray)
         self.assertIsInstance(atom_symbols, np.ndarray)
