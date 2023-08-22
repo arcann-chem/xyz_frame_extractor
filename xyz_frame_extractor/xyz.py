@@ -23,7 +23,9 @@ from typing import Tuple
 import numpy as np
 
 
-def read_xyz_trajectory(file_path: Path) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def read_xyz_trajectory(
+    file_path: Path,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Read an XYZ format trajectory file and return the number of atoms, atomic symbols, and atomic coordinates.
 
@@ -80,10 +82,15 @@ def read_xyz_trajectory(file_path: Path) -> Tuple[np.ndarray, np.ndarray, np.nda
 
             # Second line contains the molecule name or comment (optional)
             comment_line = lines[i + 1].strip()
-            match = re.search(r"i\s*=\s*(\d+),\s*time\s*=\s*(\d+\.\d+),\s*E\s*=\s*(-?\d+\.\d+)", comment_line)
+            match = re.search(
+                r"i\s*=\s*(\d+),\s*time\s*=\s*(\d+\.\d+),\s*E\s*=\s*(-?\d+\.\d+)",
+                comment_line,
+            )
 
             if match:
-                step_info_list.append([int(match.group(1)),float(match.group(2)),float(match.group(3))])
+                step_info_list.append(
+                    [int(match.group(1)), float(match.group(2)), float(match.group(3))]
+                )
 
             # Initialize arrays to store the symbols and coordinates for the current timestep
             step_atom_symbols = np.zeros((num_atoms,), dtype="<U2")
@@ -155,17 +162,17 @@ def write_xyz_frame(
     ----------
     file_path : Path
         The file path to write the XYZ coordinates to.
-    frame_index : int
+    frame_idx : int
         The index of the frame to write the XYZ coordinates for.
-    num_atoms_per_frame : np.ndarray
+    num_atoms : np.ndarray
         An array containing the number of atoms in each frame of the trajectory with shape (num_frames).
-    atom_coordinates : np.ndarray
+    atom_coords : np.ndarray
         An array containing the coordinates of each atom in each frame of the trajectory with shape (num_frames, num_atoms, 3).
     atom_symbols : np.ndarray
         An array containing the atomic symbols for each atom in each frame of the trajectory with shape (num_frames, num_atoms).
-    comment_data : np.ndarray, optional
+    comment_line : np.ndarray, optional
         An array containing additional information for the comment line with shape (num_frames, num_comment_values).
-    comment_type : str, optional
+    comment : str, optional
         Type of comment line: "frame", "cp2k", or "cell".
 
     Returns
@@ -198,9 +205,11 @@ def write_xyz_frame(
         if comment == "frame":
             xyz_file.write(f"Frame index: {frame_idx}\n")
         elif comment == "cp2k":
-            xyz_file.write(f"i = {comment_line[frame_idx, 0]}, time = {comment_line[frame_idx, 1]}, E = {comment_line[frame_idx, 2]}\n")
+            xyz_file.write(
+                f"i = {comment_line[frame_idx, 0]}, time = {comment_line[frame_idx, 1]}, E = {comment_line[frame_idx, 2]}\n"
+            )
         elif comment == "cell":
-            cell = ' '.join([f"{value:.4f}" for value in comment_line[frame_idx, 2:11]])
+            cell = " ".join([f"{value:.4f}" for value in comment_line[frame_idx, 2:11]])
             xyz_file.write(f"ABC = {cell}\n")
 
         # Loop over each atom in the specified frame

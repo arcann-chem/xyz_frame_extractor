@@ -46,12 +46,8 @@ parser.add_argument(
     choices=["frame", "cell", "cp2k"],
     help="path to the cell information file (required for 'cell' comment type)",
 )
-parser.add_argument(
-    "--cell_file",
-    type=str,
-    default="",
-    help="TODO"
-)
+parser.add_argument("--cell_file", type=str, default="", help="TODO")
+
 
 def main(input_file, output_file, frame_stride, skip_frames, comment, cell_file):
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -61,7 +57,9 @@ def main(input_file, output_file, frame_stride, skip_frames, comment, cell_file)
     # Check comment type
     known_comment_types = ["frame", "cell", "cp2k"]
     if comment not in known_comment_types:
-        logging.error(f"'{comment}' is not a known comment type. Choose from {', '.join(known_comment_types)}.")
+        logging.error(
+            f"'{comment}' is not a known comment type. Choose from {', '.join(known_comment_types)}."
+        )
         return 1
 
     # Process cell file for 'cell' comment type
@@ -83,7 +81,13 @@ def main(input_file, output_file, frame_stride, skip_frames, comment, cell_file)
     # Prompt before overwriting output file
     if output_xyz.is_file():
         while True:
-            user_input = input(f"File '{output_xyz}' already exists. Delete it (Y) or abort (N)? ").strip().upper()
+            user_input = (
+                input(
+                    f"File '{output_xyz}' already exists. Delete it (Y) or abort (N)? "
+                )
+                .strip()
+                .upper()
+            )
             if user_input == "Y":
                 output_xyz.unlink()
                 logging.info(f"Deleted '{output_xyz}'.")
@@ -94,16 +98,19 @@ def main(input_file, output_file, frame_stride, skip_frames, comment, cell_file)
             else:
                 logging.warning("Invalid input. Please enter 'Y' or 'N'.")
 
-
     # Validate stride and skip_frames values
     if frame_stride <= 0 or skip_frames < 0:
-        logging.error("Stride should be a positive integer, and skip count should be non-negative.")
+        logging.error(
+            "Stride should be a positive integer, and skip count should be non-negative."
+        )
         return 1
 
     num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(input_xyz)
 
     if frame_stride > num_atoms.size:
-        logging.error("Stride value cannot be greater than the total number of frames in the trajectory.")
+        logging.error(
+            "Stride value cannot be greater than the total number of frames in the trajectory."
+        )
         return 1
 
     if comment_line is None and comment == "cp2k":
@@ -113,7 +120,15 @@ def main(input_file, output_file, frame_stride, skip_frames, comment, cell_file)
     for frame_idx in range(skip_frames, num_atoms.size, frame_stride):
         if frame_idx >= num_atoms.size:
             continue
-        write_xyz_frame(output_xyz, frame_idx, num_atoms, atom_coords, atom_symbols, comment_line, comment=comment)
+        write_xyz_frame(
+            output_xyz,
+            frame_idx,
+            num_atoms,
+            atom_coords,
+            atom_symbols,
+            comment_line,
+            comment=comment,
+        )
         num_saved_frames += 1
 
     logging.info("Processing complete without errors.")
