@@ -6,7 +6,7 @@
 #   SPDX-License-Identifier: AGPL-3.0-only                                                           #
 #----------------------------------------------------------------------------------------------------#
 Created: 2023/07/17
-Last modified: 2023/08/08
+Last modified: 2023/09/20
 
 This script provides utility functions for reading and writing XYZ format trajectory files.
 
@@ -17,7 +17,7 @@ It includes the following functions:
 # Standard library modules
 import re
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, List, Union
 
 # Third-party modules
 import numpy as np
@@ -25,7 +25,7 @@ import numpy as np
 
 def read_xyz_trajectory(
     file_path: Path,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List]:
     """
     Read an XYZ format trajectory file and return the number of atoms, atomic symbols, and atomic coordinates.
 
@@ -36,12 +36,12 @@ def read_xyz_trajectory(
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray, np.ndarray]
+    Tuple[np.ndarray, np.ndarray, np.ndarray, List]
         A tuple containing the following numpy arrays:
         - num_atoms (np.ndarray): Array of the number of atoms for each step with dim(nb_step)
         - atom_symbols (np.ndarray): Array of atomic symbols with dim(nb_step, num_atoms)
         - atom_coords (np.ndarray): Array of atomic coordinates with dim(nb_step, num_atoms, 3)
-        - step_info (np.ndarray): Array of step information with shape (nb_step, 3), containing step number, time, and energy.
+        - comment_line (List): List of step information with shape (nb_step)
 
     Raises
     ------
@@ -63,7 +63,7 @@ def read_xyz_trajectory(
     num_atoms_list = []
     atom_symbols_list = []
     atom_coords_list = []
-    step_info_list = []
+    comment_line_list = []
 
     # Open the file and read in the lines
     with file_path.open("r") as f:
@@ -81,19 +81,10 @@ def read_xyz_trajectory(
             num_atoms_list.append(num_atoms)
 
             # Second line contains the molecule name or comment (optional)
-            comment_line = lines[i + 1].strip()
-            match = re.search(
-                r"i\s*=\s*(\d+),\s*time\s*=\s*(\d+\.\d+),\s*E\s*=\s*(-?\d+\.\d+)",
-                comment_line,
-            )
-
-            if match:
-                step_info_list.append(
-                    [int(match.group(1)), float(match.group(2)), float(match.group(3))]
-                )
+            comment_line_list.append(lines[i + 1].strip())
 
             # Initialize arrays to store the symbols and coordinates for the current timestep
-            step_atom_symbols = np.zeros((num_atoms,), dtype="<U2")
+            step_atom_symbols = np.zeros((num_atoms,), dtype="<U3")
             step_atom_coords = np.zeros((num_atoms, 3))
 
             # Loop through the lines for the current timestep
@@ -137,13 +128,13 @@ def read_xyz_trajectory(
         error_msg = "Number of atoms is not constant throughout the trajectory file."
         raise ValueError(error_msg)
 
-    # Convert the lists to numpy arrays.
+    # Convert the lists arrays if needed.
     num_atoms = np.array(num_atoms_list, dtype=int)
-    step_info = np.array(step_info_list)
     atom_symbols = np.array(atom_symbols_list)
     atom_coords = np.array(atom_coords_list)
+    comment_line = comment_line_list
 
-    return num_atoms, atom_symbols, atom_coords, step_info
+    return num_atoms, atom_symbols, atom_coords, comment_line
 
 
 def write_xyz_frame(
@@ -152,8 +143,8 @@ def write_xyz_frame(
     num_atoms: np.ndarray,
     atom_coords: np.ndarray,
     atom_symbols: np.ndarray,
-    comment_line: np.ndarray = None,
-    comment: str = "frame",
+    comment_line: Union[np.ndarray, List, str],
+    mode_comment: str,
 ) -> None:
     """
     Write the XYZ coordinates of a specific frame of a trajectory to a file.
@@ -170,10 +161,13 @@ def write_xyz_frame(
         An array containing the coordinates of each atom in each frame of the trajectory with shape (num_frames, num_atoms, 3).
     atom_symbols : np.ndarray
         An array containing the atomic symbols for each atom in each frame of the trajectory with shape (num_frames, num_atoms).
-    comment_line : np.ndarray, optional
-        An array containing additional information for the comment line with shape (num_frames, num_comment_values).
-    comment : str, optional
-        Type of comment line: "frame", "cp2k", or "cell".
+    comment_line : Union[np.ndarray, List, str]
+        Depending on the mode_comment value, the shape and type of this argument might vary:
+          - "copy": shape (num_frames)
+          - Other values might have different expected shapes.
+
+    mode_comment : str
+        Defines the type of comment line to write. Possible values are: "nothing", "copy", "lattice", "cell_array".
 
     Returns
     -------
@@ -192,25 +186,23 @@ def write_xyz_frame(
         error_msg = f"Frame index out of range: {frame_idx} (number of frames: {num_atoms.size})"
         raise IndexError(error_msg)
 
-    if comment not in ["frame", "cp2k", "cell"]:
-        error_msg = f"Incorrect value for comment line type: frame, cp2k or cell."
-        raise IndexError(error_msg)
-
     # Open the specified file in append mode
     with file_path.open("a") as xyz_file:
         # Write the number of atoms in the specified frame to the file
         xyz_file.write(f"{num_atoms[frame_idx]}\n")
-
-        # Write the comment line
-        if comment == "frame":
-            xyz_file.write(f"Frame index: {frame_idx}\n")
-        elif comment == "cp2k":
-            xyz_file.write(
-                f"i = {comment_line[frame_idx, 0]}, time = {comment_line[frame_idx, 1]}, E = {comment_line[frame_idx, 2]}\n"
-            )
-        elif comment == "cell":
+        if mode_comment == "nothing":
+            xyz_file.write(f"Frame={frame_idx}\n")
+        elif mode_comment == "copy":
+            xyz_file.write(f"{comment_line[frame_idx]}\n")
+        elif mode_comment == "lattice":
+            extended_comment = f'Lattice="{" ".join(map(str,comment_line))}" Properties=species:S:1:pos:R:3 Frame={frame_idx}\n'
+            xyz_file.write(extended_comment)
+        elif mode_comment == "cell_array":
             cell = " ".join([f"{value:.4f}" for value in comment_line[frame_idx, 2:11]])
-            xyz_file.write(f"ABC = {cell}\n")
+            extended_comment = (
+                f'Lattice="{cell}" Properties=species:S:1:pos:R:3 Frame={frame_idx}\n'
+            )
+            xyz_file.write(extended_comment)
 
         # Loop over each atom in the specified frame
         for ii in range(num_atoms[frame_idx]):
