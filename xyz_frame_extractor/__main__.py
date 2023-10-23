@@ -6,7 +6,7 @@
 #   SPDX-License-Identifier: AGPL-3.0-only                                                           #
 #----------------------------------------------------------------------------------------------------#
 Created: 2023/07/17
-Last modified: 2023/09/20
+Last modified: 2023/09/21
 
 This script extracts individual frames from a trajectory file in XYZ format and saves them to a new trajectory file.
 """
@@ -74,7 +74,6 @@ def process_arguments():
 
 def handle_mode_type(args):
     # This function manages the mode type and related parameters, returning the mode type to be used in the main function
-    mode_copy = False
     lattice_array = None
     cell_array = None
 
@@ -152,7 +151,7 @@ def main(args):
                 logging.warning("Invalid input. Please enter 'Y' or 'N'.")
 
     # Handle mode types and lattice information
-    comment_line, mode_type, error_num = handle_mode_type(args)
+    comment_lines, mode_type, error_num = handle_mode_type(args)
     if error_num != 0:
         logging.error("Aborting...")
         return 1
@@ -164,7 +163,7 @@ def main(args):
         )
         return 1
 
-    num_atoms, atom_symbols, atom_coords, read_comment_line = read_xyz_trajectory(
+    num_atoms, atom_symbols, atom_coords, read_comment_lines = read_xyz_trajectory(
         input_xyz
     )
     if args.stride > num_atoms.size:
@@ -173,7 +172,7 @@ def main(args):
         )
         return 1
     if mode_type == "copy":
-        comment_line = read_comment_line
+        comment_lines = read_comment_lines
 
     num_saved_frames = 0
     for frame_idx in range(args.skip, num_atoms.size, args.stride):
@@ -185,7 +184,7 @@ def main(args):
             num_atoms,
             atom_coords,
             atom_symbols,
-            comment_line,
+            comment_lines,
             mode_type,
         )
         num_saved_frames += 1
