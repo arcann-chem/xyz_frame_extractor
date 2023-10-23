@@ -6,7 +6,7 @@
 #   SPDX-License-Identifier: AGPL-3.0-only                                                           #
 #----------------------------------------------------------------------------------------------------#
 Created: 2023/07/17
-Last modified: 2023/08/08
+Last modified: 2023/09/21
 
 Test cases for the xyz module.
 
@@ -116,7 +116,7 @@ class TestReadXYZTrajectory(unittest.TestCase):
         self.tmp_dir.cleanup()
 
     def test_read_xyz_trajectory_oneframe(self):
-        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
+        num_atoms, atom_symbols, atom_coords, comment_lines = read_xyz_trajectory(
             self.file_oneframe_path
         )
 
@@ -137,7 +137,7 @@ class TestReadXYZTrajectory(unittest.TestCase):
         )
 
     def test_read_xyz_trajectory(self):
-        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
+        num_atoms, atom_symbols, atom_coords, comment_lines = read_xyz_trajectory(
             self.file_path
         )
 
@@ -168,7 +168,7 @@ class TestReadXYZTrajectory(unittest.TestCase):
 
     def test_read_xyz_trajectory_variable(self):
         with self.assertRaises(TypeError) as cm:
-            num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
+            num_atoms, atom_symbols, atom_coords, comment_lines = read_xyz_trajectory(
                 self.file_var_path
             )
         error_msg = str(cm.exception)
@@ -179,7 +179,7 @@ class TestReadXYZTrajectory(unittest.TestCase):
 
     def test_read_xyz_trajectory_missing(self):
         with self.assertRaises(FileNotFoundError) as cm:
-            num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
+            num_atoms, atom_symbols, atom_coords, comment_lines = read_xyz_trajectory(
                 self.file_miss_path
             )
         error_msg = str(cm.exception)
@@ -188,7 +188,7 @@ class TestReadXYZTrajectory(unittest.TestCase):
 
     def test_read_xyz_trajectory_incorrect(self):
         with self.assertRaises(IndexError) as cm:
-            num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
+            num_atoms, atom_symbols, atom_coords, comment_lines = read_xyz_trajectory(
                 self.file_inc_path
             )
         error_msg = str(cm.exception)
@@ -279,7 +279,7 @@ class TestReadWriteXYZTrajectory(unittest.TestCase):
         self.tmp_dir.cleanup()
 
     def test_read_write_xyz_trajectory(self):
-        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
+        num_atoms, atom_symbols, atom_coords, comment_lines = read_xyz_trajectory(
             self.file_path
         )
 
@@ -310,7 +310,7 @@ class TestReadWriteXYZTrajectory(unittest.TestCase):
 
         self.file_new_path = Path(self.tmp_dir.name) / "new.xyz"
         write_xyz_frame(self.file_new_path, 0, num_atoms, atom_coords, atom_symbols)
-        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
+        num_atoms, atom_symbols, atom_coords, comment_lines = read_xyz_trajectory(
             self.file_new_path
         )
 
