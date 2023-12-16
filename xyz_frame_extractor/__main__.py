@@ -6,7 +6,7 @@
 #   SPDX-License-Identifier: AGPL-3.0-only                                                           #
 #----------------------------------------------------------------------------------------------------#
 Created: 2023/07/17
-Last modified: 2023/09/21
+Last modified: 2023/12/16
 
 This script extracts individual frames from a trajectory file in XYZ format and saves them to a new trajectory file.
 """
@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 
 # Local modules
-from xyz_frame_extractor.xyz import read_xyz_trajectory, write_xyz_frame
+from xyz_frame_extractor.xyz import parse_xyz_trajectory_file, write_xyz_frame
 from xyz_frame_extractor.utils import (
     string_to_nine_floats_array,
     string_to_three_floats_array,
@@ -27,14 +27,10 @@ from xyz_frame_extractor.utils import (
 
 
 def process_arguments():
-    parser = argparse.ArgumentParser(
-        description="Process an XYZ trajectory file with options."
-    )
+    parser = argparse.ArgumentParser(description="Process an XYZ trajectory file with options.")
 
     parser.add_argument("input", type=str, help="Path to the input trajectory XYZ file")
-    parser.add_argument(
-        "output", type=str, help="Path to the output trajectory XYZ file"
-    )
+    parser.add_argument("output", type=str, help="Path to the output trajectory XYZ file")
     parser.add_argument(
         "--stride",
         type=int,
@@ -50,9 +46,9 @@ def process_arguments():
     parser.add_argument(
         "--mode",
         type=str,
-        default="frame",
-        choices=["frame", "copy", "extended"],
-        help="Mode type for the mode line (default: 'frame', choices: 'frame', 'copy', 'extended')",
+        default="nothing",
+        choices=["nothing", "copy", "extended"],
+        help="Mode type for the mode line (default: 'nothing', choices: 'nothing', 'copy', 'extended')",
     )
 
     group = parser.add_mutually_exclusive_group()
@@ -84,25 +80,12 @@ def handle_mode_type(args):
             lattice_array = lattice_values
             return lattice_array, "lattice", 0
         elif is_three:
-            lattice_array = np.array(
-                [
-                    three_values[0],
-                    0.0,
-                    0.0,
-                    0.0,
-                    three_values[1],
-                    0.0,
-                    0.0,
-                    0.0,
-                    three_values[2],
-                ]
-            )
+            lattice_array = np.array([three_values[0], 0.0, 0.0, 0.0, three_values[1], 0.0, 0.0, 0.0, three_values[2]])
             return lattice_array, "lattice", 0
         else:
-            logging.error(
-                "Wrong format for --lattice: 'R1x R1y R1z R2x R2y R2z R3x R3y R3z' or 'A B C'."
-            )
+            logging.error("Wrong format for --lattice: 'R1x R1y R1z R2x R2y R2z R3x R3y R3z' or 'A B C'.")
             return None, None, 1
+
     elif args.mode == "extended" and args.cell_file:
         cell_file_path = Path(args.cell_file)
         if not cell_file_path.is_file():
@@ -110,11 +93,13 @@ def handle_mode_type(args):
             return None, None, 1
         cell_array = np.genfromtxt(cell_file_path)
         return cell_array, "cell_array", 0
+
     elif args.mode == "extended":
-        logging.error(f"Extended requested but no --cell_file or --lattice provided.")
-        return None, None, 1
+        return True, "extended", 0
+
     elif args.mode == "copy":
         return True, "copy", 0
+
     else:
         return None, "nothing", 0
 
@@ -133,13 +118,7 @@ def main(args):
     # Prompt before overwriting output file
     if output_xyz.is_file():
         while True:
-            user_input = (
-                input(
-                    f"File '{output_xyz}' already exists. Delete it (Y) or abort (N)? "
-                )
-                .strip()
-                .upper()
-            )
+            user_input = input(f"File '{output_xyz}' already exists. Delete it (Y) or abort (N)? ").strip().upper()
             if user_input == "Y":
                 output_xyz.unlink()
                 logging.info(f"Deleted '{output_xyz}'.")
@@ -151,42 +130,36 @@ def main(args):
                 logging.warning("Invalid input. Please enter 'Y' or 'N'.")
 
     # Handle mode types and lattice information
-    comment_lines, mode_type, error_num = handle_mode_type(args)
+    comments, mode_type, error_num = handle_mode_type(args)
+    is_extended = False
+    if mode_type == "extended":
+        is_extended = True
+
     if error_num != 0:
         logging.error("Aborting...")
         return 1
 
     # Validate stride and skip_frames values
     if args.stride <= 0 or args.skip < 0:
-        logging.error(
-            "Stride should be a positive integer, and skip count should be non-negative."
-        )
+        logging.error("Stride should be a positive integer, and skip count should be non-negative.")
         return 1
 
-    num_atoms, atom_symbols, atom_coords, read_comment_lines = read_xyz_trajectory(
-        input_xyz
-    )
-    if args.stride > num_atoms.size:
-        logging.error(
-            "Stride value cannot be greater than the total number of frames in the trajectory."
-        )
+    atom_counts, atomic_symbols, atomic_coordinates, in_comments, is_extended = parse_xyz_trajectory_file(input_xyz, is_extended)
+
+    if args.stride > atom_counts.size:
+        logging.error("Stride value cannot be greater than the total number of frames in the trajectory.")
         return 1
+
     if mode_type == "copy":
-        comment_lines = read_comment_lines
+        comments = in_comments
+    elif mode_type == "extended" and is_extended:
+        comments = in_comments
 
     num_saved_frames = 0
-    for frame_idx in range(args.skip, num_atoms.size, args.stride):
-        if frame_idx >= num_atoms.size:
+    for frame_idx in range(args.skip, atom_counts.size, args.stride):
+        if frame_idx >= atom_counts.size:
             continue
-        write_xyz_frame(
-            output_xyz,
-            frame_idx,
-            num_atoms,
-            atom_coords,
-            atom_symbols,
-            comment_lines,
-            mode_type,
-        )
+        write_xyz_frame(output_xyz, frame_idx, atom_counts, atomic_symbols, atomic_coordinates, comments, mode_type)
         num_saved_frames += 1
 
     logging.info("Processing complete without errors.")
