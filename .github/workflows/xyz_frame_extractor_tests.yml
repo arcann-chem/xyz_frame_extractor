@@ -1,0 +1,41 @@
+name: xyz_frame_extractor tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9, "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run xyz_frame_extractor and verify outputs
+      run: |
+        python -m xyz_frame_extractor examples/original_trajectories/water-MD_NVT-Trajectory.xyz water-MD_NVT-Trajectory_2_1_nothing.xyz --stride 2 --skip 1 --mode nothing
+        python -m xyz_frame_extractor examples/original_trajectories/water-MD_NVT-Trajectory.xyz water-MD_NVT-Trajectory_2_1_copy.xyz --stride 2 --skip 1 --mode copy
+        python -m xyz_frame_extractor examples/original_trajectories/water-MD_NVT-Trajectory.xyz water-MD_NVT-Trajectory_2_1_lattice_3.xyz --stride 2 --skip 1 --mode extended --lattice "19.734 19.734 19.734"
+        python -m xyz_frame_extractor examples/original_trajectories/water-MD_NVT-Trajectory.xyz water-MD_NVT-Trajectory_2_1_lattice_9.xyz --stride 2 --skip 1 --mode extended --lattice "19.734 0.0 0.0 0.0 19.734 0.0 0.0 0.0 19.734"
+        python -m xyz_frame_extractor examples/original_trajectories/water-MD_NVT-Trajectory.xyz water-MD_NVT-Trajectory_2_1_cell.xyz --stride 2 --skip 1 --mode extended --cell_file examples/original_trajectories/water-MD_NVT-Cell.cell
+        
+        python -m xyz_frame_extractor examples/original_trajectories/water-MD_NPT-Trajectory.xyz water-MD_NPT-Trajectory_2_1_nothing.xyz --stride 2 --skip 1 --mode nothing
+        python -m xyz_frame_extractor examples/original_trajectories/water-MD_NPT-Trajectory.xyz water-MD_NPT-Trajectory_2_1_copy.xyz --stride 2 --skip 1 --mode copy
+        python -m xyz_frame_extractor examples/original_trajectories/water-MD_NPT-Trajectory.xyz water-MD_NPT-Trajectory_2_1_cell.xyz --stride 2 --skip 1 --mode extended --cell_file examples/original_trajectories/water-MD_NPT-Cell.cell
+
+        # Verification step
+        for file in water-MD_NVT-Trajectory_2_1_nothing.xyz water-MD_NVT-Trajectory_2_1_copy.xyz water-MD_NVT-Trajectory_2_1_lattice_3.xyz water-MD_NVT-Trajectory_2_1_lattice_9.xyz water-MD_NVT-Trajectory_2_1_cell.xyz water-MD_NPT-Trajectory_2_1_nothing.xyz water-MD_NPT-Trajectory_2_1_copy.xyz water-MD_NPT-Trajectory_2_1_cell.xyz
+        do
+        diff $file examples/ref_trajectories/$file
+        done
