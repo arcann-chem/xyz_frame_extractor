@@ -5,11 +5,11 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
 ## Features
 
 - Extract frames from an XYZ trajectory file
-- Specify the frame extraction interval using the `--stride` option
-- Skip a certain number of frames from the beginning using the `--skip` option
-- Choose the comment line using the `--comment` option: `frame`, `cp2k`, or `cell`
-- Provide a CP2K cell file using the `--cell_file` option
-- Process large trajectory files efficiently
+- Specify frame extraction interval (`--stride`)
+- Skip initial frames (`--skip`)
+- Mode options for comment lines (`--mode`): `nothing`, `copy`, `extended`
+- Can use a CP2K cell file using the `--cell_file` option
+- Can write extended xyz as output
 
 ## Requirements
 
@@ -49,19 +49,21 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
 Go to the directory where the trajectory is located or otherwise specify the absolute path of the file of the trajectory, then
 
 ```bash
-python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10 --comment frame --cell_file input.cell
+python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10 --mode extended --cell_file input.cell
 ```
 
 - `input.xyz` is the name of the input XYZ trajectory file (if not in the directory specify the absolute path)
 - `output.xyz` is the name of the output XYZ trajectory file (if needed, specify the absolute path where you want to locate your file)
 - `--stride` (optional) specifies the frame extraction interval (default: 1).
 - `--skip` (optional) specifies the number of frames to skip from the beginning of the trajectory (default: 0).
-- `--comment` (optional) specifies the comment line (default: frame): frame, cp2k or cell.
-  - `frame`: the comment in is the format Frame: $i
-  - `cp2k`: the comment line is in the CP2K format: the input.xyz has to be in the cp2k format too.
-  - `cell`: used with `--cell_file` (the name of a CP2K cell file) provide the comment as format `ABX xx xy xz yx yy yz zx zy zz`.
+- `--mode` (optional) specifies the comment line (default: frame): frame, cp2k or cell.
+  - `nothing` write the comment line as `Frame: {step_number}`
+  - `copy` copy the comment line from the input to the output
+  - `extended` write the comment as extended xyz. If no other argument is provided, it will assume your input xyz is in extended format and copy the comment line (but it will not copy the auxiliaries properties !)
+    - use `--cell_file` to provide a CP2K cell file to write extended xyz format (CP2K format is Frame Time xx xy xz yx yy yz zx zy zz)
+    - use `--lattice` and provide a string either in the format `A B C` or `xx xy xz yx yy yz zx zy zz` to write extended xyz format (but constant cell)
 
-**Note:** The input and output file paths are required parameters, while `--stride`, `--skip`, `--comment` and `--cell_file` are optional.
+**Note:** The input and output file paths are required parameters, while `--stride`, `--skip`, `--mode`, `--cell_file` and `--lattice` are optional.
 
 ## Examples
 
