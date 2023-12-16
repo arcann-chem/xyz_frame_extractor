@@ -6,20 +6,20 @@
 #   SPDX-License-Identifier: AGPL-3.0-only                                                           #
 #----------------------------------------------------------------------------------------------------#
 Created: 2023/07/17
-Last modified: 2023/08/08
+Last modified: 2023/12/16
 
 Test cases for the xyz module.
 
 Class
 -----
 TestReadXYZTrajectory
-    Test case for the read_xyz_trajectory() function.
+    Test case for the parse_xyz_trajectory_file  () function.
 
 TestWriteXYZFrameToFile
     Test case for the write_xyz_frame() function.
 
 TestReadWriteXYZTrajectory
-    Test case for combined use of read_xyz_trajectory() and write_xyz_frame() functions.
+    Test case for combined use of parse_xyz_trajectory_file  () and write_xyz_frame() functions.
 """
 # Standard library modules
 import unittest
@@ -32,18 +32,18 @@ import numpy as np
 
 # Local imports
 from xyz_frame_extractor.xyz import (
-    read_xyz_trajectory,
+    parse_xyz_trajectory_file,
     write_xyz_frame,
 )
 
 
 class TestReadXYZTrajectory(unittest.TestCase):
     """
-    Test case for the read_xyz_trajectory() function.
+    Test case for the parse_xyz_trajectory_file  () function.
 
     Methods
     -------
-    test_read_xyz_trajectory_oneframe():
+    test_parse_xyz_trajectory_file_oneframe():
         Test that the function returns the expected arrays for a single frame XYZ file.
     test_read_xyz_trajectory():
         Test that the function returns the expected arrays for a multi-frame XYZ file.
@@ -112,85 +112,107 @@ class TestReadXYZTrajectory(unittest.TestCase):
             f.write("C 2.2 1.0 1.0\n")
             f.write("C 1.0 2.2 1.0\n")
 
+        self.is_extended = False
+
     def tearDown(self):
         self.tmp_dir.cleanup()
 
-    def test_read_xyz_trajectory_oneframe(self):
-        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
-            self.file_oneframe_path
-        )
+    def test_parse_xyz_trajectory_file_oneframe(self):
+        (
+            atom_counts,
+            atomic_symbols,
+            atomic_coordinates,
+            in_comments,
+            is_extended,
+        ) = parse_xyz_trajectory_file(self.file_oneframe_path, self.is_extended)
 
-        self.assertIsInstance(num_atoms, np.ndarray)
-        self.assertIsInstance(atom_symbols, np.ndarray)
-        self.assertIsInstance(atom_coords, np.ndarray)
-        self.assertEqual(num_atoms.shape, (1,))
-        self.assertEqual(atom_symbols.shape, (1, 4))
-        self.assertEqual(atom_coords.shape, (1, 4, 3))
+        self.assertIsInstance(atom_counts, np.ndarray)
+        self.assertIsInstance(atomic_symbols, np.ndarray)
+        self.assertIsInstance(atomic_coordinates, np.ndarray)
+        self.assertEqual(atom_counts.shape, (1,))
+        self.assertEqual(atomic_symbols.shape, (1, 4))
+        self.assertEqual(atomic_coordinates.shape, (1, 4, 3))
 
-        self.assertEqual(num_atoms[0], 4)
-        self.assertListEqual(atom_symbols[0].tolist(), ["C", "C", "C", "C"])
+        self.assertEqual(atom_counts[0], 4)
+        self.assertListEqual(atomic_symbols[0].tolist(), ["C", "C", "C", "C"])
         self.assertTrue(
             np.allclose(
-                atom_coords[0],
+                atomic_coordinates[0],
                 [[0.0, 0.0, 0.0], [1.2, 0.0, 0.0], [0.0, 1.2, 0.0], [0.0, 0.0, 1.2]],
             )
         )
 
-    def test_read_xyz_trajectory(self):
-        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
-            self.file_path
-        )
+    def test_parse_xyz_trajectory_file(self):
+        (
+            atom_counts,
+            atomic_symbols,
+            atomic_coordinates,
+            in_comments,
+            is_extended,
+        ) = parse_xyz_trajectory_file(self.file_path, self.is_extended)
 
-        self.assertIsInstance(num_atoms, np.ndarray)
-        self.assertIsInstance(atom_symbols, np.ndarray)
-        self.assertIsInstance(atom_coords, np.ndarray)
-        self.assertEqual(num_atoms.shape, (2,))
-        self.assertEqual(atom_symbols.shape, (2, 4))
-        self.assertEqual(atom_coords.shape, (2, 4, 3))
+        self.assertIsInstance(atom_counts, np.ndarray)
+        self.assertIsInstance(atomic_symbols, np.ndarray)
+        self.assertIsInstance(atomic_coordinates, np.ndarray)
+        self.assertEqual(atom_counts.shape, (2,))
+        self.assertEqual(atomic_symbols.shape, (2, 4))
+        self.assertEqual(atomic_coordinates.shape, (2, 4, 3))
 
-        self.assertEqual(num_atoms[0], 4)
-        self.assertListEqual(atom_symbols[0].tolist(), ["C", "C", "C", "C"])
+        self.assertEqual(atom_counts[0], 4)
+        self.assertListEqual(atomic_symbols[0].tolist(), ["C", "C", "C", "C"])
         self.assertTrue(
             np.allclose(
-                atom_coords[0],
+                atomic_coordinates[0],
                 [[0.0, 0.0, 0.0], [1.2, 0.0, 0.0], [0.0, 1.2, 0.0], [0.0, 0.0, 1.2]],
             )
         )
 
-        self.assertEqual(num_atoms[1], 4)
-        self.assertListEqual(atom_symbols[1].tolist(), ["C", "C", "C", "C"])
+        self.assertEqual(atom_counts[1], 4)
+        self.assertListEqual(atomic_symbols[1].tolist(), ["C", "C", "C", "C"])
         self.assertTrue(
             np.allclose(
-                atom_coords[1],
+                atomic_coordinates[1],
                 [[1.0, 1.0, 1.0], [2.2, 1.0, 1.0], [1.0, 2.2, 1.0], [1.0, 1.0, 2.2]],
             )
         )
 
-    def test_read_xyz_trajectory_variable(self):
+    def test_parse_xyz_trajectory_file_variable(self):
         with self.assertRaises(TypeError) as cm:
-            num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
-                self.file_var_path
-            )
+            (
+                atom_counts,
+                atomic_symbols,
+                atomic_coordinates,
+                in_comments,
+                is_extended,
+            ) = parse_xyz_trajectory_file(self.file_var_path, self.is_extended)
         error_msg = str(cm.exception)
         expected_error_msg = (
             f"Incorrect file format: number of atoms must be an integer."
         )
         self.assertEqual(error_msg, expected_error_msg)
 
-    def test_read_xyz_trajectory_missing(self):
+    def test_parse_xyz_trajectory_file_missing(self):
         with self.assertRaises(FileNotFoundError) as cm:
-            num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
-                self.file_miss_path
-            )
+            (
+                atom_counts,
+                atomic_symbols,
+                atomic_coordinates,
+                in_comments,
+                is_extended,
+            ) = parse_xyz_trajectory_file(self.file_miss_path, self.is_extended)
         error_msg = str(cm.exception)
         expected_error_msg = f"File not found {self.file_miss_path.name} not in {self.file_miss_path.parent}"
         self.assertEqual(error_msg, expected_error_msg)
 
-    def test_read_xyz_trajectory_incorrect(self):
+    def test_parse_xyz_trajectory_file_incorrect(self):
         with self.assertRaises(IndexError) as cm:
-            num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
-                self.file_inc_path
-            )
+            (
+                atom_counts,
+                atomic_symbols,
+                atomic_coordinates,
+                in_comments,
+                is_extended,
+            ) = parse_xyz_trajectory_file(self.file_inc_path, self.is_extended)
         error_msg = str(cm.exception)
         expected_error_msg = f"Incorrect file format: end of file reached prematurely."
         self.assertEqual(error_msg, expected_error_msg)
@@ -217,33 +239,54 @@ class TestWriteXYZFrameToFile(unittest.TestCase):
 
     def test_write_xyz_frame(self):
         frame_idx = 0
-        num_atoms = np.array([2, 2, 2])
-        atom_coords = np.array(
+        atom_counts = np.array([2, 2, 2])
+        atomic_coordinates = np.array(
             [[[0, 0, 0], [1, 1, 1]], [[0, 0, 0], [2, 2, 2]], [[0, 0, 0], [1, 1, 1]]]
         )
-        atom_symbols = np.array([["C", "H"], ["C", "H"], ["N", "O"]])
-        expected_output = "2\nFrame index: 0\nC 0.000000 0.000000 0.000000\nH 1.000000 1.000000 1.000000\n"
-        write_xyz_frame(self.temp_file, frame_idx, num_atoms, atom_coords, atom_symbols)
+        atomic_symbols = np.array([["C", "H"], ["C", "H"], ["N", "O"]])
+        comments = ["Test comment"]
+        mode_type = "copy"
+
+        expected_output = "2\nTest comment\nC 0.000000 0.000000 0.000000\nH 1.000000 1.000000 1.000000\n"
+        write_xyz_frame(
+            self.temp_file,
+            frame_idx,
+            atom_counts,
+            atomic_symbols,
+            atomic_coordinates,
+            comments,
+            mode_type,
+        )
 
         with open(self.temp_file) as f:
             output = f.read()
 
         self.assertEqual(output, expected_output)
 
+        self.assertEqual(output, expected_output)
+
     def test_write_xyz_frame_frame_idx_out_of_range(self):
         frame_idx = 3
-        num_atoms = np.array([2, 3, 2])
-        atom_coords = np.array(
+        atom_counts = np.array([2, 3, 2])
+        atomic_coordinates = np.array(
             [[[0, 0, 0], [1, 1, 1]], [[0, 0, 0], [2, 2, 2]], [[0, 0, 0], [1, 1, 1]]]
         )
-        atom_symbols = np.array([["C", "H"], ["C", "H"], ["N", "O"]])
+        atomic_symbols = np.array([["C", "H"], ["C", "H"], ["N", "O"]])
+        comments = ["Test comment"]
+        mode_type = "copy"
 
         with self.assertRaises(IndexError) as cm:
             write_xyz_frame(
-                self.temp_file, frame_idx, num_atoms, atom_coords, atom_symbols
+                self.temp_file,
+                frame_idx,
+                atom_counts,
+                atomic_symbols,
+                atomic_coordinates,
+                comments,
+                mode_type,
             )
         error_msg = str(cm.exception)
-        expected_error_msg = f"Frame index out of range: {frame_idx} (number of frames: {num_atoms.size})"
+        expected_error_msg = f"Frame index out of range: {frame_idx} (number of frames: {atom_counts.size})"
         self.assertEqual(error_msg, expected_error_msg)
 
 
@@ -275,57 +318,77 @@ class TestReadWriteXYZTrajectory(unittest.TestCase):
             f.write("C 1.0 2.2 1.0\n")
             f.write("C 1.0 1.0 2.2\n")
 
+        self.is_extended = False
+        self.comments = ["Test comment"]
+        self.mode_type = "copy"
+
     def tearDown(self):
         self.tmp_dir.cleanup()
 
     def test_read_write_xyz_trajectory(self):
-        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
-            self.file_path
-        )
+        (
+            atom_counts,
+            atomic_symbols,
+            atomic_coordinates,
+            in_comments,
+            is_extended,
+        ) = parse_xyz_trajectory_file(self.file_path, self.is_extended)
 
-        self.assertIsInstance(num_atoms, np.ndarray)
-        self.assertIsInstance(atom_symbols, np.ndarray)
-        self.assertIsInstance(atom_coords, np.ndarray)
-        self.assertEqual(num_atoms.shape, (2,))
-        self.assertEqual(atom_symbols.shape, (2, 4))
-        self.assertEqual(atom_coords.shape, (2, 4, 3))
+        self.assertIsInstance(atom_counts, np.ndarray)
+        self.assertIsInstance(atomic_symbols, np.ndarray)
+        self.assertIsInstance(atomic_coordinates, np.ndarray)
+        self.assertEqual(atom_counts.shape, (2,))
+        self.assertEqual(atomic_symbols.shape, (2, 4))
+        self.assertEqual(atomic_coordinates.shape, (2, 4, 3))
 
-        self.assertEqual(num_atoms[0], 4)
-        self.assertListEqual(atom_symbols[0].tolist(), ["C", "C", "C", "C"])
+        self.assertEqual(atom_counts[0], 4)
+        self.assertListEqual(atomic_symbols[0].tolist(), ["C", "C", "C", "C"])
         self.assertTrue(
             np.allclose(
-                atom_coords[0],
+                atomic_coordinates[0],
                 [[0.0, 0.0, 0.0], [1.2, 0.0, 0.0], [0.0, 1.2, 0.0], [0.0, 0.0, 1.2]],
             )
         )
 
-        self.assertEqual(num_atoms[1], 4)
-        self.assertListEqual(atom_symbols[1].tolist(), ["C", "C", "C", "C"])
+        self.assertEqual(atom_counts[1], 4)
+        self.assertListEqual(atomic_symbols[1].tolist(), ["C", "C", "C", "C"])
         self.assertTrue(
             np.allclose(
-                atom_coords[1],
+                atomic_coordinates[1],
                 [[1.0, 1.0, 1.0], [2.2, 1.0, 1.0], [1.0, 2.2, 1.0], [1.0, 1.0, 2.2]],
             )
         )
 
         self.file_new_path = Path(self.tmp_dir.name) / "new.xyz"
-        write_xyz_frame(self.file_new_path, 0, num_atoms, atom_coords, atom_symbols)
-        num_atoms, atom_symbols, atom_coords, step_infos = read_xyz_trajectory(
-            self.file_new_path
+        write_xyz_frame(
+            self.file_new_path,
+            0,
+            atom_counts,
+            atomic_symbols,
+            atomic_coordinates,
+            self.comments,
+            self.mode_type,
         )
+        (
+            atom_counts,
+            atomic_symbols,
+            atomic_coordinates,
+            in_comments,
+            is_extended,
+        ) = parse_xyz_trajectory_file(self.file_new_path, self.is_extended)
 
-        self.assertIsInstance(num_atoms, np.ndarray)
-        self.assertIsInstance(atom_symbols, np.ndarray)
-        self.assertIsInstance(atom_coords, np.ndarray)
-        self.assertEqual(num_atoms.shape, (1,))
-        self.assertEqual(atom_symbols.shape, (1, 4))
-        self.assertEqual(atom_coords.shape, (1, 4, 3))
+        self.assertIsInstance(atom_counts, np.ndarray)
+        self.assertIsInstance(atomic_symbols, np.ndarray)
+        self.assertIsInstance(atomic_coordinates, np.ndarray)
+        self.assertEqual(atom_counts.shape, (1,))
+        self.assertEqual(atomic_symbols.shape, (1, 4))
+        self.assertEqual(atomic_coordinates.shape, (1, 4, 3))
 
-        self.assertEqual(num_atoms[0], 4)
-        self.assertListEqual(atom_symbols[0].tolist(), ["C", "C", "C", "C"])
+        self.assertEqual(atom_counts[0], 4)
+        self.assertListEqual(atomic_symbols[0].tolist(), ["C", "C", "C", "C"])
         self.assertTrue(
             np.allclose(
-                atom_coords[0],
+                atomic_coordinates[0],
                 [[0.0, 0.0, 0.0], [1.2, 0.0, 0.0], [0.0, 1.2, 0.0], [0.0, 0.0, 1.2]],
             )
         )

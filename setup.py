@@ -2,9 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
     name="xyz_frame_extractor",
-    version="0.1.2",
+    version="0.2.0",
     author="cdavro",
-    author_email="cdavro+github_contact@slmail.me",
+    author_email="cdavro.arcann.yi9jv@eridanitech.com",
     description="to_do",
     url="https://github.com/arcann/xyz_frame_extractor",
     license="GNU Affero General Public License v3",
