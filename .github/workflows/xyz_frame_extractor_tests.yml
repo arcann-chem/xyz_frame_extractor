@@ -1,4 +1,4 @@
-name: xyz_frame_extractor tests
+name: XYZ Frame Extractor tests
 
 on: [push, pull_request]
 
