@@ -1,12 +1,12 @@
 """
 #----------------------------------------------------------------------------------------------------#
 #   ArcaNN: xyz_frame_extractor                                                                      #
-#   Copyright 2023 ArcaNN developers group <https://github.com/arcann-chem>                          #
+#   Copyright 2023-2024 ArcaNN developers group <https://github.com/arcann-chem>                     #
 #                                                                                                    #
 #   SPDX-License-Identifier: AGPL-3.0-only                                                           #
 #----------------------------------------------------------------------------------------------------#
 Created: 2023/09/20
-Last modified: 2023/09/20
+Last modified: 2024/05/15
 
 This script provides utility functions for reading and writing XYZ format trajectory files.
 
