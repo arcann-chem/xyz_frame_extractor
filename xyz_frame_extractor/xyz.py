@@ -1,12 +1,12 @@
 """
 #----------------------------------------------------------------------------------------------------#
 #   ArcaNN: xyz_frame_extractor                                                                      #
-#   Copyright 2023 ArcaNN developers group <https://github.com/arcann-chem>                          #
+#   Copyright 2023-2024 ArcaNN developers group <https://github.com/arcann-chem>                     #
 #                                                                                                    #
 #   SPDX-License-Identifier: AGPL-3.0-only                                                           #
 #----------------------------------------------------------------------------------------------------#
 Created: 2023/07/17
-Last modified: 2023/12/16
+Last modified: 2024/05/15
 
 This script provides utility functions for reading and writing XYZ format trajectory files.
 
@@ -14,6 +14,7 @@ It includes the following functions:
 - parse_xyz_trajectory_file: Read an XYZ format trajectory file and extract the number of atoms, atomic symbols, and atomic coordinates.
 - write_xyz_frame: Write the XYZ coordinates of a specific frame of a trajectory to a file.
 """
+
 # Standard library modules
 import re
 from pathlib import Path
@@ -25,7 +26,7 @@ import numpy as np
 
 def parse_xyz_trajectory_file(
     trajectory_file_path: Path, is_extended: bool
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List, bool]:
     """
     Read an XYZ format trajectory file and return the number of atoms, atomic symbols, and atomic coordinates.
 
@@ -33,15 +34,18 @@ def parse_xyz_trajectory_file(
     ----------
     trajectory_file_path : Path
         The path to the trajectory file.
+    is_extended : bool
+        Flag indicating whether the file uses an extended XYZ format with additional information in the comment lines.
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray, np.ndarray, List]
-        A tuple containing the following numpy arrays:
-        - atom_counts (np.ndarray): Array of the number of atoms for each frame with dim(frame_count)
-        - atomic_symbols (np.ndarray): Array of atomic symbols with dim(frame_count, atom_count_frame) and a size of 3 char
-        - atomic_coordinates (np.ndarray): Array of atomic coordinates with dim(frame_count, atom_count_frame, 3)
-        - comments (List): List of comment file_lines with dim(frame_count)
+    Tuple[np.ndarray, np.ndarray, np.ndarray, List, bool]
+        A tuple containing the following:
+        - atom_counts (np.ndarray): Array of the number of atoms for each frame with dimension (frame_count,).
+        - atomic_symbols (np.ndarray): Array of atomic symbols with dimension (frame_count, atom_count_frame) and a size of 3 characters.
+        - atomic_coordinates (np.ndarray): Array of atomic coordinates with dimension (frame_count, atom_count_frame, 3).
+        - comments (List): List of comment lines with length (frame_count).
+        - is_extended (bool): The flag indicating if the file was processed as an extended XYZ format.
 
     Raises
     ------
@@ -49,6 +53,7 @@ def parse_xyz_trajectory_file(
         If the specified file does not exist.
     TypeError
         If the number of atoms is not an integer.
+        If the extended format is incorrect.
     ValueError
         If the number of atoms is not constant throughout the trajectory file.
         If the file format is incorrect.

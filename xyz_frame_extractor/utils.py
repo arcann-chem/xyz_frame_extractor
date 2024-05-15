@@ -1,12 +1,12 @@
 """
 #----------------------------------------------------------------------------------------------------#
 #   ArcaNN: xyz_frame_extractor                                                                      #
-#   Copyright 2023 ArcaNN developers group <https://github.com/arcann-chem>                          #
+#   Copyright 2023-2024 ArcaNN developers group <https://github.com/arcann-chem>                     #
 #                                                                                                    #
 #   SPDX-License-Identifier: AGPL-3.0-only                                                           #
 #----------------------------------------------------------------------------------------------------#
 Created: 2023/09/20
-Last modified: 2023/09/20
+Last modified: 2024/05/15
 
 This script provides utility functions for reading and writing XYZ format trajectory files.
 
@@ -14,11 +14,13 @@ It includes the following functions:
 - string_to_nine_floats_array: Convert a string containing nine space-separated floats into a NumPy array of these floats.
 - string_to_three_floats_array: Convert a string containing three space-separated floats into a NumPy array of these floats.
 """
+
 # Third-party modules
 import numpy as np
+from typing import Tuple
 
 
-def string_to_nine_floats_array(s: str) -> (bool, np.ndarray):
+def string_to_nine_floats_array(s: str) -> Tuple[bool, np.ndarray]:
     """
     Convert a string containing nine space-separated floats into a NumPy array of these floats.
 
@@ -53,7 +55,7 @@ def string_to_nine_floats_array(s: str) -> (bool, np.ndarray):
     return True, np.array(array_elements)
 
 
-def string_to_three_floats_array(s: str) -> (bool, np.ndarray):
+def string_to_three_floats_array(s: str) -> Tuple[bool, np.ndarray]:
     """
     Convert a string containing three space-separated floats into a NumPy array of these floats.
 

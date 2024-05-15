@@ -21,6 +21,7 @@ TestWriteXYZFrameToFile
 TestReadWriteXYZTrajectory
     Test case for combined use of parse_xyz_trajectory_file  () and write_xyz_frame() functions.
 """
+
 # Standard library modules
 import unittest
 import tempfile
