@@ -16,9 +16,9 @@ It includes the following functions:
 """
 # Third-party modules
 import numpy as np
+from typing import Tuple
 
-
-def string_to_nine_floats_array(s: str) -> (bool, np.ndarray):
+def string_to_nine_floats_array(s: str) -> Tuple[bool, np.ndarray]:
     """
     Convert a string containing nine space-separated floats into a NumPy array of these floats.
 
@@ -53,7 +53,7 @@ def string_to_nine_floats_array(s: str) -> (bool, np.ndarray):
     return True, np.array(array_elements)
 
 
-def string_to_three_floats_array(s: str) -> (bool, np.ndarray):
+def string_to_three_floats_array(s: str) -> Tuple[bool, np.ndarray]:
     """
     Convert a string containing three space-separated floats into a NumPy array of these floats.
 
