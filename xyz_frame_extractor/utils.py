@@ -14,9 +14,11 @@ It includes the following functions:
 - string_to_nine_floats_array: Convert a string containing nine space-separated floats into a NumPy array of these floats.
 - string_to_three_floats_array: Convert a string containing three space-separated floats into a NumPy array of these floats.
 """
+
 # Third-party modules
 import numpy as np
 from typing import Tuple
+
 
 def string_to_nine_floats_array(s: str) -> Tuple[bool, np.ndarray]:
     """

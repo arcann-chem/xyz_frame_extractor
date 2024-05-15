@@ -20,11 +20,7 @@ import numpy as np
 
 # Local modules
 from xyz_frame_extractor.xyz import parse_xyz_trajectory_file, write_xyz_frame
-from xyz_frame_extractor.utils import (
-    string_to_nine_floats_array,
-    string_to_three_floats_array,
-)
-
+from xyz_frame_extractor.utils import string_to_nine_floats_array, string_to_three_floats_array
 
 def process_arguments():
     parser = argparse.ArgumentParser(description="Process an XYZ trajectory file with options.")
@@ -70,10 +66,9 @@ def process_arguments():
 
 def handle_mode_type(args):
     # This function manages the mode type and related parameters, returning the mode type to be used in the main function
-    lattice_array = None
-    cell_array = None
 
     if args.mode == "extended" and args.lattice:
+        lattice_array = None
         is_nine, lattice_values = string_to_nine_floats_array(args.lattice)
         is_three, three_values = string_to_three_floats_array(args.lattice)
         if is_nine:
@@ -84,13 +79,14 @@ def handle_mode_type(args):
             return lattice_array, "lattice", 0
         else:
             logging.error("Wrong format for --lattice: 'R1x R1y R1z R2x R2y R2z R3x R3y R3z' or 'A B C'.")
-            return None, None, 1
+            return lattice_array, None, 1
 
     elif args.mode == "extended" and args.cell_file:
+        cell_array = None
         cell_file_path = Path(args.cell_file)
         if not cell_file_path.is_file():
             logging.error(f"Cell information file '{cell_file_path}' not found.")
-            return None, None, 1
+            return cell_array, None, 1
         cell_array = np.genfromtxt(cell_file_path)
         return cell_array, "cell_array", 0
 
