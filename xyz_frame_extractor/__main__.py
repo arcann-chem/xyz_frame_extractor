@@ -10,6 +10,7 @@ Last modified: 2024/05/15
 
 This script extracts individual frames from a trajectory file in XYZ format and saves them to a new trajectory file.
 """
+
 # Standard library modules
 import argparse
 import logging
@@ -20,13 +21,21 @@ import numpy as np
 
 # Local modules
 from xyz_frame_extractor.xyz import parse_xyz_trajectory_file, write_xyz_frame
-from xyz_frame_extractor.utils import string_to_nine_floats_array, string_to_three_floats_array
+from xyz_frame_extractor.utils import (
+    string_to_nine_floats_array,
+    string_to_three_floats_array,
+)
+
 
 def process_arguments():
-    parser = argparse.ArgumentParser(description="Process an XYZ trajectory file with options.")
+    parser = argparse.ArgumentParser(
+        description="Process an XYZ trajectory file with options."
+    )
 
     parser.add_argument("input", type=str, help="Path to the input trajectory XYZ file")
-    parser.add_argument("output", type=str, help="Path to the output trajectory XYZ file")
+    parser.add_argument(
+        "output", type=str, help="Path to the output trajectory XYZ file"
+    )
     parser.add_argument(
         "--stride",
         type=int,
@@ -75,10 +84,24 @@ def handle_mode_type(args):
             lattice_array = lattice_values
             return lattice_array, "lattice", 0
         elif is_three:
-            lattice_array = np.array([three_values[0], 0.0, 0.0, 0.0, three_values[1], 0.0, 0.0, 0.0, three_values[2]])
+            lattice_array = np.array(
+                [
+                    three_values[0],
+                    0.0,
+                    0.0,
+                    0.0,
+                    three_values[1],
+                    0.0,
+                    0.0,
+                    0.0,
+                    three_values[2],
+                ]
+            )
             return lattice_array, "lattice", 0
         else:
-            logging.error("Wrong format for --lattice: 'R1x R1y R1z R2x R2y R2z R3x R3y R3z' or 'A B C'.")
+            logging.error(
+                "Wrong format for --lattice: 'R1x R1y R1z R2x R2y R2z R3x R3y R3z' or 'A B C'."
+            )
             return lattice_array, None, 1
 
     elif args.mode == "extended" and args.cell_file:
@@ -114,7 +137,13 @@ def main(args):
     # Prompt before overwriting output file
     if output_xyz.is_file():
         while True:
-            user_input = input(f"File '{output_xyz}' already exists. Delete it (Y) or abort (N)? ").strip().upper()
+            user_input = (
+                input(
+                    f"File '{output_xyz}' already exists. Delete it (Y) or abort (N)? "
+                )
+                .strip()
+                .upper()
+            )
             if user_input == "Y":
                 output_xyz.unlink()
                 logging.info(f"Deleted '{output_xyz}'.")
@@ -137,13 +166,19 @@ def main(args):
 
     # Validate stride and skip_frames values
     if args.stride <= 0 or args.skip < 0:
-        logging.error("Stride should be a positive integer, and skip count should be non-negative.")
+        logging.error(
+            "Stride should be a positive integer, and skip count should be non-negative."
+        )
         return 1
 
-    atom_counts, atomic_symbols, atomic_coordinates, in_comments, is_extended = parse_xyz_trajectory_file(input_xyz, is_extended)
+    atom_counts, atomic_symbols, atomic_coordinates, in_comments, is_extended = (
+        parse_xyz_trajectory_file(input_xyz, is_extended)
+    )
 
     if args.stride > atom_counts.size:
-        logging.error("Stride value cannot be greater than the total number of frames in the trajectory.")
+        logging.error(
+            "Stride value cannot be greater than the total number of frames in the trajectory."
+        )
         return 1
 
     if mode_type == "copy":
@@ -155,7 +190,15 @@ def main(args):
     for frame_idx in range(args.skip, atom_counts.size, args.stride):
         if frame_idx >= atom_counts.size:
             continue
-        write_xyz_frame(output_xyz, frame_idx, atom_counts, atomic_symbols, atomic_coordinates, comments, mode_type)
+        write_xyz_frame(
+            output_xyz,
+            frame_idx,
+            atom_counts,
+            atomic_symbols,
+            atomic_coordinates,
+            comments,
+            mode_type,
+        )
         num_saved_frames += 1
 
     logging.info("Processing complete without errors.")

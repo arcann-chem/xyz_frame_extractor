@@ -14,6 +14,7 @@ It includes the following functions:
 - parse_xyz_trajectory_file: Read an XYZ format trajectory file and extract the number of atoms, atomic symbols, and atomic coordinates.
 - write_xyz_frame: Write the XYZ coordinates of a specific frame of a trajectory to a file.
 """
+
 # Standard library modules
 import re
 from pathlib import Path
@@ -23,7 +24,9 @@ from typing import List, Tuple, Union
 import numpy as np
 
 
-def parse_xyz_trajectory_file(trajectory_file_path: Path, is_extended: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List, bool]:
+def parse_xyz_trajectory_file(
+    trajectory_file_path: Path, is_extended: bool
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List, bool]:
     """
     Read an XYZ format trajectory file and return the number of atoms, atomic symbols, and atomic coordinates.
 
