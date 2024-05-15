@@ -1,12 +1,12 @@
 """
 #----------------------------------------------------------------------------------------------------#
 #   ArcaNN: xyz_frame_extractor                                                                      #
-#   Copyright 2023 ArcaNN developers group <https://github.com/arcann-chem>                          #
+#   Copyright 2023-2024 ArcaNN developers group <https://github.com/arcann-chem>                     #
 #                                                                                                    #
 #   SPDX-License-Identifier: AGPL-3.0-only                                                           #
 #----------------------------------------------------------------------------------------------------#
 Created: 2023/07/17
-Last modified: 2023/12/16
+Last modified: 2024/05/15
 
 This script extracts individual frames from a trajectory file in XYZ format and saves them to a new trajectory file.
 """
