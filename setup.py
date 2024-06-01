@@ -4,7 +4,7 @@ setup(
     name="xyz_frame_extractor",
     version="1.0.1",
     author="Rolf David",
-    author_email="cdavro.arcann.yi9jv@eridanitech.com",
+    author_email="",
     description="",
     url="https://github.com/arcann/xyz_frame_extractor",
     license="GNU Affero General Public License v3",
