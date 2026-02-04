@@ -34,7 +34,26 @@ def process_arguments():
 
     parser.add_argument("input", type=str, help="Path to the input trajectory XYZ file")
     parser.add_argument(
-        "output", type=str, help="Path to the output trajectory XYZ file"
+        "output",
+        type=str,
+        nargs="?",
+        default=None,
+        help=(
+            "Path to the output trajectory XYZ file. If omitted, the output file name "
+            "is generated as '<input_stem>_<begin>_<end>_<stride>.xyz'."
+        ),
+    )
+    parser.add_argument(
+        "--begin",
+        type=int,
+        default=0,
+        help="Start frame index (0-based, default: 0)",
+    )
+    parser.add_argument(
+        "--end",
+        type=int,
+        default=None,
+        help="End frame index (0-based, inclusive; use -1 for last frame; default: last frame)",
     )
     parser.add_argument(
         "--stride",
@@ -43,17 +62,19 @@ def process_arguments():
         help="Stride value: a positive integer specifying the frame extraction interval (default: 1)",
     )
     parser.add_argument(
-        "--skip",
-        type=int,
-        default=0,
-        help="Number of frames to skip from the beginning of the trajectory (default: 0)",
-    )
-    parser.add_argument(
         "--mode",
         type=str,
         default="nothing",
         choices=["nothing", "copy", "extended"],
         help="Mode type for the mode line (default: 'nothing', choices: 'nothing', 'copy', 'extended')",
+    )
+    parser.add_argument(
+        "--per_frame",
+        action="store_true",
+        help=(
+            "Write one frame per file named '<output_stem>_00000.xyz' "
+            "(frame number zero-padded)."
+        ),
     )
 
     group = parser.add_mutually_exclusive_group()
@@ -123,36 +144,17 @@ def handle_mode_type(args):
         return None, "nothing", 0
 
 
-def main(args):
+def main(args=None):
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-    input_xyz = Path(args.input)
-    output_xyz = Path(args.output)
+    if args is None:
+        args = process_arguments()
 
+    input_xyz = Path(args.input)
     # Check input file existence
     if not input_xyz.is_file():
         logging.error(f"{input_xyz} file not found.")
         return 1
-
-    # Prompt before overwriting output file
-    if output_xyz.is_file():
-        while True:
-            user_input = (
-                input(
-                    f"File '{output_xyz}' already exists. Delete it (Y) or abort (N)? "
-                )
-                .strip()
-                .upper()
-            )
-            if user_input == "Y":
-                output_xyz.unlink()
-                logging.info(f"Deleted '{output_xyz}'.")
-                break
-            elif user_input == "N":
-                logging.info("Operation aborted.")
-                return 0
-            else:
-                logging.warning("Invalid input. Please enter 'Y' or 'N'.")
 
     # Handle mode types and lattice information
     comments, mode_type, error_num = handle_mode_type(args)
@@ -164,22 +166,90 @@ def main(args):
         logging.error("Aborting...")
         return 1
 
-    # Validate stride and skip_frames values
-    if args.stride <= 0 or args.skip < 0:
-        logging.error(
-            "Stride should be a positive integer, and skip count should be non-negative."
-        )
-        return 1
-
     atom_counts, atomic_symbols, atomic_coordinates, in_comments, is_extended = (
         parse_xyz_trajectory_file(input_xyz, is_extended)
     )
 
-    if args.stride > atom_counts.size:
+    # Validate begin/end/stride values
+    if args.stride <= 0:
+        logging.error("Stride should be a positive integer.")
+        return 1
+    if args.begin < 0:
+        logging.error("Begin index should be non-negative.")
+        return 1
+    if args.begin >= atom_counts.size:
         logging.error(
-            "Stride value cannot be greater than the total number of frames in the trajectory."
+            "Begin index cannot be greater than or equal to the total number of frames."
         )
         return 1
+    if args.end is not None and args.end < args.begin:
+        if args.end == -1:
+            pass
+        else:
+            logging.error("End index cannot be less than the begin index.")
+            return 1
+    logging.info(f"Trajectory contains {atom_counts.size} frames.")
+
+    if args.end is None or args.end == -1:
+        end_idx = atom_counts.size - 1
+    else:
+        if args.end >= atom_counts.size:
+            logging.warning(
+                "End index exceeds total number of frames; using last frame instead."
+            )
+            end_idx = atom_counts.size - 1
+        else:
+            end_idx = args.end
+
+    if args.output is None:
+        output_name = f"{input_xyz.stem}_{args.begin}_{end_idx}_{args.stride}.xyz"
+        output_xyz = Path.cwd() / output_name
+    else:
+        output_xyz = Path(args.output)
+
+    # Prompt before overwriting output file
+    if args.per_frame:
+        existing_files = list(output_xyz.parent.glob(f"{output_xyz.stem}_*.xyz"))
+        if existing_files:
+            while True:
+                user_input = (
+                    input(
+                        "Per-frame output files already exist. Delete them (Y) or abort (N)? "
+                    )
+                    .strip()
+                    .upper()
+                )
+                if user_input == "Y":
+                    for file_path in existing_files:
+                        file_path.unlink()
+                    logging.info(
+                        f"Deleted {len(existing_files)} existing per-frame files."
+                    )
+                    break
+                elif user_input == "N":
+                    logging.info("Operation aborted.")
+                    return 0
+                else:
+                    logging.warning("Invalid input. Please enter 'Y' or 'N'.")
+    else:
+        if output_xyz.is_file():
+            while True:
+                user_input = (
+                    input(
+                        f"File '{output_xyz}' already exists. Delete it (Y) or abort (N)? "
+                    )
+                    .strip()
+                    .upper()
+                )
+                if user_input == "Y":
+                    output_xyz.unlink()
+                    logging.info(f"Deleted '{output_xyz}'.")
+                    break
+                elif user_input == "N":
+                    logging.info("Operation aborted.")
+                    return 0
+                else:
+                    logging.warning("Invalid input. Please enter 'Y' or 'N'.")
 
     if mode_type == "copy":
         comments = in_comments
@@ -187,11 +257,17 @@ def main(args):
         comments = in_comments
 
     num_saved_frames = 0
-    for frame_idx in range(args.skip, atom_counts.size, args.stride):
+    for frame_idx in range(args.begin, end_idx + 1, args.stride):
         if frame_idx >= atom_counts.size:
             continue
+        if args.per_frame:
+            output_path = output_xyz.with_name(
+                f"{output_xyz.stem}_{frame_idx:05d}.xyz"
+            )
+        else:
+            output_path = output_xyz
         write_xyz_frame(
-            output_xyz,
+            output_path,
             frame_idx,
             atom_counts,
             atomic_symbols,
@@ -206,5 +282,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    arguments = process_arguments()
-    main(arguments)
+    main()
