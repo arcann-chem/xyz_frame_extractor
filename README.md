@@ -6,7 +6,7 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
 
 - Extract frames from an XYZ trajectory file
 - Specify frame extraction interval (`--stride`)
-- Skip initial frames (`--skip`)
+- Specify frame range (`--begin`, `--end`)
 - Mode options for comment lines (`--mode`): `nothing`, `copy`, `extended`
 - Can use a CP2K cell file using the `--cell_file` option
 - Can write extended xyz as output
@@ -46,37 +46,55 @@ The ArcaNN XYZ Frame Extractor is a command-line tool that processes trajectory 
 
 ## Usage
 
-Go to the directory where the trajectory is located or otherwise specify the absolute path of the file of the trajectory, then
+Go to the directory where the trajectory is located or otherwise specify the absolute path of the file of the trajectory, then use either of the following commands:
 
 ```bash
-python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10 --mode extended --cell_file input.cell
+python -m xyz_frame_extractor input.xyz output.xyz --begin 10 --stride 2 --mode extended --cell_file input.cell
+```
+
+```bash
+xyz_frame_extractor input.xyz output.xyz --begin 10 --stride 2 --mode extended --cell_file input.cell
 ```
 
 - `input.xyz` is the name of the input XYZ trajectory file (if not in the directory specify the absolute path)
 - `output.xyz` is the name of the output XYZ trajectory file (if needed, specify the absolute path where you want to locate your file)
+- `--begin` (optional) specifies the start frame index (0-based, default: 0).
+- `--end` (optional) specifies the end frame index (0-based, inclusive; use -1 for last frame; default: last frame).
 - `--stride` (optional) specifies the frame extraction interval (default: 1).
-- `--skip` (optional) specifies the number of frames to skip from the beginning of the trajectory (default: 0).
 - `--mode` (optional) specifies the comment line (default: frame): frame, cp2k or cell.
   - `nothing` write the comment line as `Frame: {step_number}`
   - `copy` copy the comment line from the input to the output
   - `extended` write the comment as extended xyz. If no other argument is provided, it will assume your input xyz is in extended format and copy the comment line (but it will not copy the auxiliaries properties !)
     - use `--cell_file` to provide a CP2K cell file to write extended xyz format (CP2K format is Frame Time xx xy xz yx yy yz zx zy zz)
     - use `--lattice` and provide a string either in the format `A B C` or `xx xy xz yx yy yz zx zy zz` to write extended xyz format (but constant cell)
+- `--per_frame` (optional) writes one frame per file named `<output_stem>_00000.xyz` (frame number zero-padded).
 
-**Note:** The input and output file paths are required parameters, while `--stride`, `--skip`, `--mode`, `--cell_file` and `--lattice` are optional.
+**Note:** The input file path is required. The output file path is optional; if omitted, the output name is generated as `<input_stem>_<begin>_<end>_<stride>.xyz` in the current working directory. `--begin`, `--end`, `--stride`, `--mode`, `--cell_file` and `--lattice` are optional.
 
 ## Examples
 
-1. Extract frames from `input.xyz` with a stride of 2, skipping the first 10 frames:
+1. Extract frames from `input.xyz` starting at frame 10 with a stride of 2:
 
     ```bash
-    python -m xyz_frame_extractor input.xyz output.xyz --stride 2 --skip 10
+    python -m xyz_frame_extractor input.xyz output.xyz --begin 10 --stride 2
     ```
 
-2. Extract frames from `input.xyz` with a stride of 50 without skipping any frames:
+2. Extract frames from `input.xyz` with a stride of 50 across the whole trajectory:
 
     ```bash
     python -m xyz_frame_extractor $HOME/inputs/input.xyz  $HOME/outputs/output.xyz --stride 50
+    ```
+
+3. Write one frame per file in the output directory:
+
+    ```bash
+    python -m xyz_frame_extractor input.xyz output.xyz --per_frame --stride 10
+    ```
+
+4. Let the tool generate the output name:
+
+    ```bash
+    python -m xyz_frame_extractor input.xyz --begin 5 --end 25 --stride 2
     ```
 
 ## License
