@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="xyz_frame_extractor",
-    version="2.0.0",
+    version="2.0.1",
     author="Rolf David",
     author_email="",
     description="",

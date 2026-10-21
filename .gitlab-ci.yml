@@ -1,0 +1,102 @@
+workflow:
+  name: "XYZ Frame Extractor CI"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+
+stages:
+  - test
+
+unittests_requirements:
+  stage: test
+  image: python:3.10
+
+  script:
+    - pip install -r requirements.txt
+    - python -m unittest discover xyz_frame_extractor/unittests
+
+xyz_frame_extractor_tests_requirements:
+  stage: test
+  image: python:3.10
+
+  script:
+    - pip install -r requirements.txt
+
+    - |
+      set -e
+
+      python -m xyz_frame_extractor examples/original_trajectories/water-MD_NVT-Trajectory.xyz water-MD_NVT-Trajectory_1_-1_2_nothing.xyz --begin 1 --end -1 --stride 2 --mode nothing
+      python -m xyz_frame_extractor examples/original_trajectories/water-MD_NVT-Trajectory.xyz water-MD_NVT-Trajectory_1_-1_2_copy.xyz --begin 1 --end -1 --stride 2 --mode copy
+      python -m xyz_frame_extractor examples/original_trajectories/water-MD_NVT-Trajectory.xyz water-MD_NVT-Trajectory_1_-1_2_lattice_3.xyz --begin 1 --end -1 --stride 2 --mode extended --lattice "19.734 19.734 19.734"
+      python -m xyz_frame_extractor examples/original_trajectories/water-MD_NVT-Trajectory.xyz water-MD_NVT-Trajectory_1_-1_2_lattice_9.xyz --begin 1 --end -1 --stride 2 --mode extended --lattice "19.734 0.0 0.0 0.0 19.734 0.0 0.0 0.0 19.734"
+      python -m xyz_frame_extractor examples/original_trajectories/water-MD_NVT-Trajectory.xyz water-MD_NVT-Trajectory_1_-1_2_cell.xyz --begin 1 --end -1 --stride 2 --mode extended --cell_file examples/original_trajectories/water-MD_NVT-Cell.cell
+
+      python -m xyz_frame_extractor examples/original_trajectories/water-MD_NPT-Trajectory.xyz water-MD_NPT-Trajectory_1_-1_2_nothing.xyz --begin 1 --end -1 --stride 2 --mode nothing
+      python -m xyz_frame_extractor examples/original_trajectories/water-MD_NPT-Trajectory.xyz water-MD_NPT-Trajectory_1_-1_2_copy.xyz --begin 1 --end -1 --stride 2 --mode copy
+      python -m xyz_frame_extractor examples/original_trajectories/water-MD_NPT-Trajectory.xyz water-MD_NPT-Trajectory_1_-1_2_cell.xyz --begin 1 --end -1 --stride 2 --mode extended --cell_file examples/original_trajectories/water-MD_NPT-Cell.cell
+
+      for file in \
+        water-MD_NVT-Trajectory_1_-1_2_nothing.xyz \
+        water-MD_NVT-Trajectory_1_-1_2_copy.xyz \
+        water-MD_NVT-Trajectory_1_-1_2_lattice_3.xyz \
+        water-MD_NVT-Trajectory_1_-1_2_lattice_9.xyz \
+        water-MD_NVT-Trajectory_1_-1_2_cell.xyz \
+        water-MD_NPT-Trajectory_1_-1_2_nothing.xyz \
+        water-MD_NPT-Trajectory_1_-1_2_copy.xyz \
+        water-MD_NPT-Trajectory_1_-1_2_cell.xyz
+      do
+        diff "$file" "examples/ref_trajectories/$file"
+      done
+
+unit_tests:
+  stage: test
+  image: python:3.10
+
+  script:
+    - pip install -r requirements.txt
+    - python -m unittest discover xyz_frame_extractor/unittests
+
+unittests_matrix:
+  stage: test
+  image: "python:${PYTHON_VERSION}"
+
+  parallel:
+    matrix:
+      - PYTHON_VERSION: "3.7"
+        NUMPY_VERSION: ">=1.15,<1.16"
+        SETUPTOOLS_VERSION: ">=40.0,<41.0"
+        PIP_VERSION: ">=18.0,<19.0"
+        WHEEL_VERSION: ">=0.32,<0.33"
+
+      - PYTHON_VERSION: "3.8"
+        NUMPY_VERSION: ">=1.18,<1.19"
+        SETUPTOOLS_VERSION: ">=41.5,<42.0"
+        PIP_VERSION: ">=19.3,<20.0"
+        WHEEL_VERSION: ">=0.34,<0.35"
+
+      - PYTHON_VERSION: "3.9"
+        NUMPY_VERSION: ">=1.20,<1.21"
+        SETUPTOOLS_VERSION: ">=51.0,<52.0"
+        PIP_VERSION: ">=20.3,<21.0"
+        WHEEL_VERSION: ">=0.36,<0.37"
+
+      - PYTHON_VERSION: "3.10"
+        NUMPY_VERSION: ">=1.22,<1.23"
+        SETUPTOOLS_VERSION: ">=58.3,<59.0"
+        PIP_VERSION: ">=21.3,<22.0"
+        WHEEL_VERSION: ">=0.38,<0.39"
+
+      - PYTHON_VERSION: "3.11"
+        NUMPY_VERSION: ">=1.24,<1.25"
+        SETUPTOOLS_VERSION: ">=65.6,<66.0"
+        PIP_VERSION: ">=23.0,<24.0"
+        WHEEL_VERSION: ">=0.40,<0.41"
+
+  script:
+    - python -m pip install "pip${PIP_VERSION}"
+    - python -m pip install "setuptools${SETUPTOOLS_VERSION}"
+    - python -m pip install "wheel${WHEEL_VERSION}"
+    - python -m pip install "numpy${NUMPY_VERSION}"
+    - python -m unittest discover xyz_frame_extractor/unittests
